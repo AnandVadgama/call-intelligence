@@ -50,15 +50,15 @@ html, body, [class*="css"], .stApp {
 }
 
 /* Glassmorphism Cards */
-.glass-card {
-    background: rgba(30, 41, 59, 0.45);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 20px;
-    padding: 28px;
-    margin-bottom: 24px;
-    box-shadow: 0 10px 30px 0 rgba(0, 0, 0, 0.25);
+.glass-card, div[data-testid="stVerticalBlockBorderWrapper"] {
+    background: rgba(30, 41, 59, 0.45) !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    border-radius: 20px !important;
+    padding: 28px !important;
+    margin-bottom: 24px !important;
+    box-shadow: 0 10px 30px 0 rgba(0, 0, 0, 0.25) !important;
 }
 
 /* Badge Color Codes */
@@ -334,66 +334,64 @@ st.markdown("<div class='subtitle-custom'>Analyze call recordings, transcribe di
 col_inputs, col_results = st.columns([1, 1.2])
 
 with col_inputs:
-    st.markdown("<div class='glass-card'>", unsafe_allow_html=True)
-    st.markdown("<h3 style='font-family: Outfit; font-weight: 600; color: white; margin-top:0px;'>🎙️ Call Audio Input</h3>", unsafe_allow_html=True)
-    
-    # Selection of Input Type
-    input_mode = st.radio("Choose Input Mode", ["📁 Process Custom Upload", "💡 Explore Demo Presets"])
-    
-    selected_preset = None
-    uploaded_file = None
-    audio_path = None
-    
-    if input_mode == "💡 Explore Demo Presets":
-        selected_preset = st.selectbox("Select Predefined Payment Collection Call", list(DEMO_PRESETS.keys()))
-        preset_info = DEMO_PRESETS[selected_preset]
-        preset_file = preset_info["file_name"]
+    with st.container(border=True):
+        st.markdown("<h3 style='font-family: Outfit; font-weight: 600; color: white; margin-top:0px;'>🎙️ Call Audio Input</h3>", unsafe_allow_html=True)
         
-        # Audio player for pre-generated audio presets
-        base_dir = os.path.dirname(os.path.abspath(__file__))
-        audio_path = os.path.join(base_dir, "samples", preset_file)
-        if os.path.exists(audio_path):
-            # Detect audio format
-            audio_format = "audio/mp3" if preset_file.endswith(".mp3") else "audio/wav"
-            st.audio(audio_path, format=audio_format)
-        else:
-            st.error(f"Sample audio preset {preset_file} not found in samples directory.")
+        # Selection of Input Type
+        input_mode = st.radio("Choose Input Mode", ["📁 Process Custom Upload", "💡 Explore Demo Presets"])
+        
+        selected_preset = None
+        uploaded_file = None
+        audio_path = None
+        
+        if input_mode == "💡 Explore Demo Presets":
+            selected_preset = st.selectbox("Select Predefined Payment Collection Call", list(DEMO_PRESETS.keys()))
+            preset_info = DEMO_PRESETS[selected_preset]
+            preset_file = preset_info["file_name"]
             
-        st.markdown(
-            f"<p style='color: #94a3b8; font-size: 0.9rem;'><i>This preset contains a real call log. "
-            f"Expected code: <b>{preset_info['result']['code']} ({preset_info['result']['label']})</b>.</i></p>",
-            unsafe_allow_html=True
-        )
-        
-    else:
-        uploaded_file = st.file_uploader("Upload audio file", type=["mp3", "wav", "m4a"])
-        if uploaded_file:
-            st.audio(uploaded_file)
-            st.success(f"Successfully staged: {uploaded_file.name} ({uploaded_file.size/1024:.1f} KB)")
+            # Audio player for pre-generated audio presets
+            base_dir = os.path.dirname(os.path.abspath(__file__))
+            audio_path = os.path.join(base_dir, "samples", preset_file)
+            if os.path.exists(audio_path):
+                # Detect audio format
+                audio_format = "audio/mp3" if preset_file.endswith(".mp3") else "audio/wav"
+                st.audio(audio_path, format=audio_format)
+            else:
+                st.error(f"Sample audio preset {preset_file} not found in samples directory.")
+                
+            st.markdown(
+                f"<p style='color: #94a3b8; font-size: 0.9rem;'><i>This preset contains a real call log. "
+                f"Expected code: <b>{preset_info['result']['code']} ({preset_info['result']['label']})</b>.</i></p>",
+                unsafe_allow_html=True
+            )
+            
+        else:
+            uploaded_file = st.file_uploader("Upload audio file", type=["mp3", "wav", "m4a"])
+            if uploaded_file:
+                st.audio(uploaded_file)
+                st.success(f"Successfully staged: {uploaded_file.name} ({uploaded_file.size/1024:.1f} KB)")
 
-    st.markdown("<br/>", unsafe_allow_html=True)
-    
-    # Action Button
-    analyze_btn = st.button("🚀 Analyze Call Recording")
-    st.markdown("</div>", unsafe_allow_html=True)
+        st.markdown("<br/>", unsafe_allow_html=True)
+        
+        # Action Button
+        analyze_btn = st.button("🚀 Analyze Call Recording")
 
     # Key Code Information Guide
-    st.markdown("<div class='glass-card'>", unsafe_allow_html=True)
-    st.markdown("<h4 style='font-family: Outfit; font-weight: 600; color: white; margin-top:0px;'>🏷️ Payment Classification Lexicon</h4>", unsafe_allow_html=True)
-    
-    guide_cols = st.columns(2)
-    with guide_cols[0]:
-        st.markdown("""
-        - <span style='color: #10b981; font-weight: 700;'>PTP</span>: **Promise to Pay**<br/>Commitment to full settlement on a set date.
-        - <span style='color: #ef4444; font-weight: 700;'>RTP</span>: **Refuse to Pay**<br/>Explicit refusal to settle the balance/invoice.
-        - <span style='color: #f59e0b; font-weight: 700;'>EXC</span>: **Excuse or Delay**<br/>Temporary excuse, asking for extension.
-        """, unsafe_allow_html=True)
-    with guide_cols[1]:
-        st.markdown("""
-        - <span style='color: #3b82f6; font-weight: 700;'>PPC</span>: **Partial Pay Commitment**<br/>Paying a segment now and drafting plans.
-        - <span style='color: #9ca3af; font-weight: 700;'>NR</span>: **No Clear Response**<br/>Ambiguous answers, deflection, or hang-ups.
-        """, unsafe_allow_html=True)
-    st.markdown("</div>", unsafe_allow_html=True)
+    with st.container(border=True):
+        st.markdown("<h4 style='font-family: Outfit; font-weight: 600; color: white; margin-top:0px;'>🏷️ Payment Classification Lexicon</h4>", unsafe_allow_html=True)
+        
+        guide_cols = st.columns(2)
+        with guide_cols[0]:
+            st.markdown("""
+            - <span style='color: #10b981; font-weight: 700;'>PTP</span>: **Promise to Pay**<br/>Commitment to full settlement on a set date.
+            - <span style='color: #ef4444; font-weight: 700;'>RTP</span>: **Refuse to Pay**<br/>Explicit refusal to settle the balance/invoice.
+            - <span style='color: #f59e0b; font-weight: 700;'>EXC</span>: **Excuse or Delay**<br/>Temporary excuse, asking for extension.
+            """, unsafe_allow_html=True)
+        with guide_cols[1]:
+            st.markdown("""
+            - <span style='color: #3b82f6; font-weight: 700;'>PPC</span>: **Partial Pay Commitment**<br/>Paying a segment now and drafting plans.
+            - <span style='color: #9ca3af; font-weight: 700;'>NR</span>: **No Clear Response**<br/>Ambiguous answers, deflection, or hang-ups.
+            """, unsafe_allow_html=True)
 
 # Store results in Streamlit session state to keep results displayed on screen
 if "last_analysis" not in st.session_state:
@@ -525,93 +523,92 @@ with col_results:
         badge_class = f"badge-{color_class}"
         detail_class = f"detail-card-{color_class}"
         
-        st.markdown("<div class='glass-card'>", unsafe_allow_html=True)
-        
-        # Header Row
-        header_cols = st.columns([1, 1])
-        with header_cols[0]:
-            st.markdown("<h3 style='font-family: Outfit; font-weight: 700; color: white; margin-top:0px; margin-bottom: 2px;'>📊 AI Insights</h3>", unsafe_allow_html=True)
-            st.markdown(f"<p style='color: #64748b; font-size:0.85rem; margin-bottom: 20px;'>File: {analysis_data['source']}</p>", unsafe_allow_html=True)
-        with header_cols[1]:
-            st.markdown(
-                f"<div style='text-align: right;'><span class='badge {badge_class}'>{code} - {res.get('label', 'Unknown')}</span></div>",
-                unsafe_allow_html=True
-            )
-            
-        # Metrics Strip
-        metric_cols = st.columns(3)
-        with metric_cols[0]:
-            st.markdown(
-                f"<div class='metric-box'>"
-                f"<div class='section-label'>Confidence</div>"
-                f"<div class='metric-num'>{res.get('confidence', 0)}%</div>"
-                f"</div>",
-                unsafe_allow_html=True
-            )
-        with metric_cols[1]:
-            st.markdown(
-                f"<div class='metric-box'>"
-                f"<div class='section-label'>Latency</div>"
-                f"<div class='metric-num'>{analysis_data['latency']}</div>"
-                f"</div>",
-                unsafe_allow_html=True
-            )
-        with metric_cols[2]:
-            st.markdown(
-                f"<div class='metric-box'>"
-                f"<div class='section-label'>Language</div>"
-                f"<div class='metric-num'>{res.get('language', 'English')}</div>"
-                f"</div>",
-                unsafe_allow_html=True
-            )
-            
-        st.markdown("<br/>", unsafe_allow_html=True)
-        
-        # Key Phrase card
-        st.markdown(
-            f"<div class='detail-card {detail_class}'>"
-            f"<div class='section-label'>🔑 Supporting Key Phrase</div>"
-            f"<div class='quote-text'>“{res.get('key_phrase', 'No matching phrase')}”</div>"
-            f"</div>",
-            unsafe_allow_html=True
-        )
-        
-        # Summary card
-        st.markdown(
-            f"<div class='detail-card {detail_class}'>"
-            f"<div class='section-label'>📝 Executive Summary</div>"
-            f"<div class='summary-text'>{res.get('summary', 'No summary provided')}</div>"
-            f"</div>",
-            unsafe_allow_html=True
-        )
-        
-        # Full Transcript Expander
-        with st.expander("🎙️ Show Full Dialogue Transcript", expanded=True):
-            raw_transcript = res.get("transcript", "No transcript found.")
-            key_phrase = res.get("key_phrase", "")
-            
-            # Attempt to highlight key phrase in transcript for visual flair!
-            if key_phrase and key_phrase in raw_transcript:
-                highlighted_transcript = raw_transcript.replace(
-                    key_phrase, 
-                    f"<span style='background: rgba(167, 139, 250, 0.3); border-bottom: 2px solid #a78bfa; font-weight: 600; padding: 2px 4px; border-radius: 4px;'>{key_phrase}</span>"
+        with st.container(border=True):
+            # Header Row
+            header_cols = st.columns([1, 1])
+            with header_cols[0]:
+                st.markdown("<h3 style='font-family: Outfit; font-weight: 700; color: white; margin-top:0px; margin-bottom: 2px;'>📊 AI Insights</h3>", unsafe_allow_html=True)
+                st.markdown(f"<p style='color: #64748b; font-size:0.85rem; margin-bottom: 20px;'>File: {analysis_data['source']}</p>", unsafe_allow_html=True)
+            with header_cols[1]:
+                st.markdown(
+                    f"<div style='text-align: right;'><span class='badge {badge_class}'>{code} - {res.get('label', 'Unknown')}</span></div>",
+                    unsafe_allow_html=True
                 )
-                st.markdown(f"<p style='line-height: 1.7; color: #cbd5e1;'>{highlighted_transcript}</p>", unsafe_allow_html=True)
-            else:
-                st.markdown(f"<p style='line-height: 1.7; color: #cbd5e1;'>{raw_transcript}</p>", unsafe_allow_html=True)
                 
-        # Model Abstraction Metadata Footer
-        st.markdown(
-            f"<div style='border-top: 1px solid rgba(255,255,255,0.06); padding-top: 12px; margin-top: 20px; font-size: 0.8rem; color: #64748b;'>"
-            f"⚙️ Category analysis rendered using <b>{analysis_data['model_used']}</b> Core."
-            f"</div>",
-            unsafe_allow_html=True
-        )
-        st.markdown("</div>", unsafe_allow_html=True)
+            # Metrics Strip
+            metric_cols = st.columns(3)
+            with metric_cols[0]:
+                st.markdown(
+                    f"<div class='metric-box'>"
+                    f"<div class='section-label'>Confidence</div>"
+                    f"<div class='metric-num'>{res.get('confidence', 0)}%</div>"
+                    f"</div>",
+                    unsafe_allow_html=True
+                )
+            with metric_cols[1]:
+                st.markdown(
+                    f"<div class='metric-box'>"
+                    f"<div class='section-label'>Latency</div>"
+                    f"<div class='metric-num'>{analysis_data['latency']}</div>"
+                    f"</div>",
+                    unsafe_allow_html=True
+                )
+            with metric_cols[2]:
+                st.markdown(
+                    f"<div class='metric-box'>"
+                    f"<div class='section-label'>Language</div>"
+                    f"<div class='metric-num'>{res.get('language', 'English')}</div>"
+                    f"</div>",
+                    unsafe_allow_html=True
+                )
+                
+            st.markdown("<br/>", unsafe_allow_html=True)
+            
+            # Key Phrase card
+            st.markdown(
+                f"<div class='detail-card {detail_class}'>"
+                f"<div class='section-label'>🔑 Supporting Key Phrase</div>"
+                f"<div class='quote-text'>“{res.get('key_phrase', 'No matching phrase')}”</div>"
+                f"</div>",
+                unsafe_allow_html=True
+            )
+            
+            # Summary card
+            st.markdown(
+                f"<div class='detail-card {detail_class}'>"
+                f"<div class='section-label'>📝 Executive Summary</div>"
+                f"<div class='summary-text'>{res.get('summary', 'No summary provided')}</div>"
+                f"</div>",
+                unsafe_allow_html=True
+            )
+            
+            # Full Transcript Expander
+            with st.expander("🎙️ Show Full Dialogue Transcript", expanded=True):
+                raw_transcript = res.get("transcript", "No transcript found.")
+                key_phrase = res.get("key_phrase", "")
+                
+                # Attempt to highlight key phrase in transcript for visual flair!
+                if key_phrase and key_phrase in raw_transcript:
+                    highlighted_transcript = raw_transcript.replace(
+                        key_phrase, 
+                        f"<span style='background: rgba(167, 139, 250, 0.3); border-bottom: 2px solid #a78bfa; font-weight: 600; padding: 2px 4px; border-radius: 4px;'>{key_phrase}</span>"
+                    )
+                    st.markdown(f"<p style='line-height: 1.7; color: #cbd5e1;'>{highlighted_transcript}</p>", unsafe_allow_html=True)
+                else:
+                    st.markdown(f"<p style='line-height: 1.7; color: #cbd5e1;'>{raw_transcript}</p>", unsafe_allow_html=True)
+                    
+            # Model Abstraction Metadata Footer
+            st.markdown(
+                f"<div style='border-top: 1px solid rgba(255,255,255,0.06); padding-top: 12px; margin-top: 20px; font-size: 0.8rem; color: #64748b;'>"
+                f"⚙️ Category analysis rendered using <b>{analysis_data['model_used']}</b> Core."
+                f"</div>",
+                unsafe_allow_html=True
+            )
     else:
         # Initial Placeholder State
-        st.markdown("<div class='glass-card' style='text-align: center; padding: 60px 40px;'>", unsafe_allow_html=True)
-        st.image("https://img.icons8.com/nolan/96/artificial-intelligence.png", width=90)
-        st.markdown("<h3 style='font-family: Outfit; font-weight: 600; color: white;'>Awaiting Audio Analysis</h3>", unsafe_allow_html=True)
-        st.markdown("<p style='color: #64748b;'>Stage a custom recording or select a predefined demo call preset, then click 'Analyze Call Recording' to extract payment commitments, confidence scoring, key phrases, and transcripts.</p>", unsafe_allow_html=True)
-        st.markdown("</div>", unsafe_allow_html=True)
+        with st.container(border=True):
+            st.markdown("<div style='text-align: center; padding: 40px 20px;'>", unsafe_allow_html=True)
+            st.image("https://img.icons8.com/nolan/96/artificial-intelligence.png", width=90)
+            st.markdown("<h3 style='font-family: Outfit; font-weight: 600; color: white;'>Awaiting Audio Analysis</h3>", unsafe_allow_html=True)
+            st.markdown("<p style='color: #64748b;'>Stage a custom recording or select a predefined demo call preset, then click 'Analyze Call Recording' to extract payment commitments, confidence scoring, key phrases, and transcripts.</p>", unsafe_allow_html=True)
+            st.markdown("</div>", unsafe_allow_html=True)
